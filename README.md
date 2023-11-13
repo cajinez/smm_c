@@ -11,3 +11,11 @@ Install the necessary packages
 ```
 pip install -r requirements.txt
 ```
+## Running 
+```
+flask --app web_flask run --debug
+```
+or
+```
+python -m flask --app web_flask run --debug
+```
