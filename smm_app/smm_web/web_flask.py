@@ -31,7 +31,7 @@ def home():
 @app.route("/video")
 def video():
     return Response(generate(),
-        mimetype = "multipar/x-mixed-replace; boundary=frame")
+        mimetype = "multipart/x-mixed-replace; boundary=frame")
 
 
 cap.release()
