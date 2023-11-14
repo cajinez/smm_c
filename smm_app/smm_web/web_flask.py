@@ -18,10 +18,20 @@ def generate():
             faces = face_detector.detectMultiScale(gray, 1.3, 5)
             for (x, y , w, h) in faces:
                 cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+            (flag, encodedImage) = cv2.imencode(".jpg", frame)
+            if not flag:
+                continue
+            yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
+                bytearray(encodedImage) + b'\r\n')
 
 @app.route("/")
 def home():
     return render_template("index.html")
+
+@app.route("/video")
+def video():
+    return Response(generate(),
+        mimetype = "multipar/x-mixed-replace; boundary=frame")
 
 
 cap.release()
