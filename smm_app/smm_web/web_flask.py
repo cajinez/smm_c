@@ -33,5 +33,7 @@ def video():
     return Response(generate(),
         mimetype = "multipart/x-mixed-replace; boundary=frame")
 
+if __name__ == "__main__":
+    app.run(debug=True)
 
 cap.release()

@@ -1,7 +1,7 @@
 import cv2
 
 cap = cv2.VideoCapture(0)
-#cap = cv2.VideoCapture(0, cv2.CAP_DSHOW) en windows
+#cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
 face_detector = cv2.CascadeClassifier(cv2.data.haarcascades + 
     "haarcascade_frontalface_default.xml")
 
