@@ -5,7 +5,10 @@ import cv2
 
 app = Flask(__name__)
 
-cap = cv2.VideoCapture(0)
+myrtmp_addr = "rtmp://localhost:1935/live/mystream"
+cap = cv2.VideoCapture(myrtmp_addr)
+
+#cap = cv2.VideoCapture(0)
 #cap = cv2.VideoCapture(0, cv2.CAP_DSHOW) en windows
 face_detector = cv2.CascadeClassifier(cv2.data.haarcascades + 
     "haarcascade_frontalface_default.xml")
@@ -34,6 +37,6 @@ def video():
         mimetype = "multipart/x-mixed-replace; boundary=frame")
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False)
 
 cap.release()
