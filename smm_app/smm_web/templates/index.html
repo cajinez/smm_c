@@ -8,6 +8,27 @@
 </head>
 <body class="container">
     <h1>Video en directo</h1>
+    <div class="video">
     <img src="{{ url_for('video') }}">
+    </div>
+    <div class="loader">
+        <span class="loader__element"></span>
+        <span class="loader__element"></span>
+        <span class="loader__element"></span>
+    </div>
 </body>
+
+<script>
+    document.querySelector(".video").style.display = "none";
+
+    setTimeout(function() {
+    document.querySelector(".video").style.display = "block";
+    },1000);
+
+    document.querySelector(".loader").style.display = "block";
+
+    setTimeout(function() {
+    document.querySelector(".loader").style.display = "none";
+    },1000);
+</script>
 </html>
