@@ -1,61 +1,151 @@
-import tensorflow as tf
-import numpy as np
+# https://youtu.be/rdjWDAYt98s
+"""
+Train deep learning models to predict age and gender.
+
+Datase from here: https://susanqq.github.io/UTKFace/
+"""
+
 import pandas as pd
-import cv2
+import numpy as np
 import os
+import matplotlib.pyplot as plt
+import cv2
+from keras.models import Sequential,load_model,Model
+from keras.layers import Conv2D,MaxPool2D,Dense,Dropout,BatchNormalization,Flatten,Input
+from sklearn.model_selection import train_test_split
 
-# Load the IMDB-WIKI dataset
-data = pd.read_csv('imdb_wiki.csv')
+path = "UTKFace/UTKFace"
+images = []
+age = []
+gender = []
+for img in os.listdir(path):
+  ages = img.split("_")[0]
+  genders = img.split("_")[1]
+  img = cv2.imread(str(path)+"/"+str(img))
+  img = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
+  images.append(np.array(img))
+  age.append(np.array(ages))
+  gender.append(np.array(genders))
+  
+age = np.array(age,dtype=np.int64)
+images = np.array(images)   #Forgot to scale image for my training. Please divide by 255 to scale. 
+gender = np.array(gender,np.uint64)
 
-# Extract the gender labels from the dataset
-gender_labels = np.array(data['gender'])
+x_train_age, x_test_age, y_train_age, y_test_age = train_test_split(images, age, random_state=42)
 
-# Define a function to load and preprocess images
-def load_image(image_path):
-    # Load the image from disk
-    image = cv2.imread(image_path)
+x_train_gender, x_test_gender, y_train_gender, y_test_gender = train_test_split(images, gender, random_state=42)
 
-    # Convert the image to grayscale
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+##################################################
+#Define age model and train. 
+##################################
 
-    # Resize the image to 48x48 pixels
-    image = cv2.resize(image, (48, 48))
+age_model = Sequential()
+age_model.add(Conv2D(128, kernel_size=3, activation='relu', input_shape=(200,200,3)))
+#age_model.add(Conv2D(128, kernel_size=3, activation='relu'))
+age_model.add(MaxPool2D(pool_size=3, strides=2))
 
-    # Normalize the image
-    image = image / 255.0
+age_model.add(Conv2D(128, kernel_size=3, activation='relu'))
+#age_model.add(Conv2D(128, kernel_size=3, activation='relu'))
+age_model.add(MaxPool2D(pool_size=3, strides=2))
+              
+age_model.add(Conv2D(256, kernel_size=3, activation='relu'))
+#age_model.add(Conv2D(256, kernel_size=3, activation='relu'))
+age_model.add(MaxPool2D(pool_size=3, strides=2))
 
-    # Reshape the image to a 4D tensor
-    image = np.reshape(image, (1, 48, 48, 1))
+age_model.add(Conv2D(512, kernel_size=3, activation='relu'))
+#age_model.add(Conv2D(512, kernel_size=3, activation='relu'))
+age_model.add(MaxPool2D(pool_size=3, strides=2))
 
-    return image
+age_model.add(Flatten())
+age_model.add(Dropout(0.2))
+age_model.add(Dense(512, activation='relu'))
 
-# Define the CNN model architecture
-model = tf.keras.models.Sequential([
-    tf.keras.layers.Conv2D(32, (3, 3), activation='relu', input_shape=(48, 48, 1)),
-    tf.keras.layers.MaxPooling2D((2, 2)),
-    tf.keras.layers.Conv2D(64, (3, 3), activation='relu'),
-    tf.keras.layers.MaxPooling2D((2, 2)),
-    tf.keras.layers.Conv2D(128, (3, 3), activation='relu'),
-    tf.keras.layers.MaxPooling2D((2, 2)),
-    tf.keras.layers.Flatten(),
-    tf.keras.layers.Dense(128, activation='relu'),
-    tf.keras.layers.Dense(1, activation='sigmoid')
-])
+age_model.add(Dense(1, activation='linear', name='age'))
+              
+age_model.compile(optimizer='adam', loss='mse', metrics=['mae'])
+print(age_model.summary())              
+                           
+history_age = age_model.fit(x_train_age, y_train_age,
+                        validation_data=(x_test_age, y_test_age), epochs=50)
 
-# Compile the model
-model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+age_model.save('age_model_50epochs.h5')
 
-# Train the model
-for i in range(len(data)):
-    # Load and preprocess the image
-    image_path = os.path.join('imdb_wiki', data['path'][i])
-    image = load_image(image_path)
+################################################################
+#Define gender model and train
+##################################################
+gender_model = Sequential()
 
-    # Get the gender label for the image
-    gender_label = gender_labels[i]
+gender_model.add(Conv2D(36, kernel_size=3, activation='relu', input_shape=(200,200,3)))
 
-    # Train the model on the image and gender label
-    model.train_on_batch(image, gender_label)
+gender_model.add(MaxPool2D(pool_size=3, strides=2))
+gender_model.add(Conv2D(64, kernel_size=3, activation='relu'))
+gender_model.add(MaxPool2D(pool_size=3, strides=2))
 
-# Save the trained model
-model.save('gender_model.h5')
+gender_model.add(Conv2D(128, kernel_size=3, activation='relu'))
+gender_model.add(MaxPool2D(pool_size=3, strides=2))
+
+gender_model.add(Conv2D(256, kernel_size=3, activation='relu'))
+gender_model.add(MaxPool2D(pool_size=3, strides=2))
+
+gender_model.add(Conv2D(512, kernel_size=3, activation='relu'))
+gender_model.add(MaxPool2D(pool_size=3, strides=2))
+
+gender_model.add(Flatten())
+gender_model.add(Dropout(0.2))
+gender_model.add(Dense(512, activation='relu'))
+gender_model.add(Dense(1, activation='sigmoid', name='gender'))
+
+gender_model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+
+history_gender = gender_model.fit(x_train_gender, y_train_gender,
+                        validation_data=(x_test_gender, y_test_gender), epochs=50)
+
+gender_model.save('gender_model_50epochs.h5')
+
+
+############################################################
+
+history = history_age
+
+#plot the training and validation accuracy and loss at each epoch
+loss = history.history['loss']
+val_loss = history.history['val_loss']
+epochs = range(1, len(loss) + 1)
+plt.plot(epochs, loss, 'y', label='Training loss')
+plt.plot(epochs, val_loss, 'r', label='Validation loss')
+plt.title('Training and validation loss')
+plt.xlabel('Epochs')
+plt.ylabel('Loss')
+plt.legend()
+plt.show()
+
+acc = history.history['accuracy']
+#acc = history.history['accuracy']
+val_acc = history.history['val_accuracy']
+#val_acc = history.history['val_accuracy']
+
+plt.plot(epochs, acc, 'y', label='Training acc')
+plt.plot(epochs, val_acc, 'r', label='Validation acc')
+plt.title('Training and validation accuracy')
+plt.xlabel('Epochs')
+plt.ylabel('Accuracy')
+plt.legend()
+plt.show()
+
+####################################################################
+from keras.models import load_model
+#Test the model
+my_model = load_model('gender_model_50epochs.h5', compile=False)
+
+
+predictions = my_model.predict(x_test_gender)
+y_pred = (predictions>= 0.5).astype(int)[:,0]
+
+from sklearn import metrics
+print ("Accuracy = ", metrics.accuracy_score(y_test_gender, y_pred))
+
+#Confusion Matrix - verify accuracy of each class
+from sklearn.metrics import confusion_matrix
+import seaborn as sns
+cm=confusion_matrix(y_test_gender, y_pred)  
+sns.heatmap(cm, annot=True)
