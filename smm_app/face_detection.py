@@ -46,19 +46,41 @@ while True:
         emotion_idx = preds_emotion.argmax()
         emotion = emotion_labels[emotion_idx]
 
+
+        # Extraer la Región de Interés (ROI) del rostro
+        face_roi = frame[y:y + h, x:x + w]
+
+        # Redimensionar la ROI del rostro para que coincida con la forma de entrada del modelo
+        resized_face = cv2.resize(face_roi, (224, 224), interpolation=cv2.INTER_AREA)
+
+        # Normalizar la imagen del rostro redimensionado
+        normalized_face = resized_face / 255.0
+
+        # Reorganizar la imagen para que coincida con la forma de entrada del modelo
+        reshaped_face = normalized_face.reshape(1, 224, 224, 3)
+
         # Predecir genero utilizando el modelo preentrenado
-        roi_color=frame[y:y+h,x:x+w]
-        roi_color=cv2.resize(roi_color,(224,224),interpolation=cv2.INTER_AREA)
-        gender_predict = model_gender.predict(np.array(roi_color).reshape(-1,224,224,3))
+        #roi_color=frame[y:y+h,x:x+w]
+        #roi_color=cv2.resize(roi_color,(224,224),interpolation=cv2.INTER_AREA)
+
+        #Predecir el género usando el modelo preentrenado
+        gender_predict = model_gender.predict(reshaped_face.reshape(-1,224,224,3))
         gender_predict = (gender_predict>= 0.5).astype(int)[:,0]
         gender_label=gender_labels[gender_predict[0]] 
 
-        #Age
-        age_predict = model_age.predict(np.array(roi_color).reshape(-1,224,224,3))
-        print(age_predict)
-        age = round(age_predict[0,0])
 
-        # Dibujar un rectángulo alrededor del rostro y etiquetar con la emoción predicha
+
+
+        # Predecir edad utilizando el modelo preentrenado
+        age_predict = model_age.predict(reshaped_face)
+        # Obtener el índice de la clase con la probabilidad más alta
+        predicted_age_index = np.argmax(age_predict)
+        # Convertir el índice en la edad predicha
+        age = predicted_age_index + 1  # Sumar 1 porque los índices comienzan desde 0
+
+
+
+        # Dibujar un rectángulo alrededor del rostro y etiquetar con la emoción predicha, el género y la edad
         cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 2)
         cv2.putText(frame, emotion, (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
         cv2.putText(frame, gender_label, (x,y+h+30), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
