@@ -15,11 +15,12 @@ from keras.models import Sequential,load_model,Model
 from keras.layers import Conv2D,MaxPool2D,Dense,Dropout,BatchNormalization,Flatten,Input
 from sklearn.model_selection import train_test_split
 
-path = "UTKFace/UTKFace"
+path = "../../dataset"
 images = []
 age = []
 gender = []
 for img in os.listdir(path):
+  print(img)
   ages = img.split("_")[0]
   genders = img.split("_")[1]
   img = cv2.imread(str(path)+"/"+str(img))

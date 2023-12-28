@@ -1,5 +1,5 @@
 import cv2
-
+from deepface import DeepFace
 
 cap = cv2.VideoCapture(0)
 #cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
@@ -12,6 +12,8 @@ while True:
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         faces = face_detector.detectMultiScale(gray, 1.3, 5)
         for (x, y , w, h) in faces:
+            result = DeepFace.analyze(frame, actions=['age', 'gender'])
+            print(result)
             cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
         cv2.imshow("Frame", frame)
 
