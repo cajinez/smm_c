@@ -51,3 +51,16 @@
     100% { transform: scale(2); }
   }
   
+  .camera-button {
+    
+    background: none;
+    border: none;
+    padding-top: 5px;
+    cursor: pointer;
+    width: 100px; /* Ajusta el tamaño de la imagen según tus necesidades */
+    height: auto;
+  }
+
+  .espacio{
+    padding-top: 10px;
+  }

@@ -8,9 +8,28 @@
 </head>
 <body class="container">
     <h1>Video en directo</h1>
+    <form action="/set_stream_key" method="post">
+        <label for="stream_key">Clave de Stream:</label><br>
+        <input type="text" id="stream_key" name="stream_key" ><br>
+        <input type="submit" value="Buscar">
+    </form>
+
+    <form action="/set_frame_skip" method="post" class="espacio" >
+        <label for="frame_skip">Saltar frames:</label><br>
+        <input type="number" id="frame_skip" name="frame_skip" min="1"> <br>
+        <input type="submit" value="Establecer" >
+    </form>
+
+    <form action="/set_camera" method="post" class="espacio">
+        <label  for="frame_skip">Usar Webcam:</label><br>
+        <input title="Webcam" alt="webcam" src="{{ url_for('static', filename='webcam.jpg')}}" type="image" class="camera-button"/>
+
+    </form>
+
     <div class="video">
     <img src="{{ url_for('video') }}">
     </div>
+
     <div class="loader">
         <span class="loader__element"></span>
         <span class="loader__element"></span>
