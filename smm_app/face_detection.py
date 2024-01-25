@@ -2,6 +2,10 @@
 import cv2  # OpenCV para tareas de visión por computadora
 from deepface import DeepFace  # Biblioteca DeepFace para análisis facial
 import numpy as np
+from tensorflow.python.client import device_lib
+
+# Verificar la detección de GPU
+print(device_lib.list_local_devices())
 
 # Cargar el modelo preentrenado para la detección de emociones
 model_emotion = DeepFace.build_model("Emotion")
